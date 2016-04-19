@@ -145,6 +145,7 @@ fork(void)
   np->sz = proc->sz;
   np->parent = proc;
   *np->tf = *proc->tf;
+  np->priority = 0; // init priority
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
@@ -166,14 +167,23 @@ fork(void)
   return pid;
 }
 
+// Set the current process's priority.
+int
+setpriority (int priority) {
+  proc->priority = priority;
+  return proc->priority;
+}
+
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state
 // until its parent calls wait() to find out it exited.
 void
-exit(void)
+exit(int status)
 {
   struct proc *p;
   int fd;
+
+  proc->exitstatus = status;
 
   if(proc == initproc)
     panic("init exiting");
@@ -214,7 +224,7 @@ exit(void)
 // Wait for a child process to exit and return its pid.
 // Return -1 if this process has no children.
 int
-wait(void)
+wait(int *status)
 {
   struct proc *p;
   int havekids, pid;
@@ -238,6 +248,8 @@ wait(void)
         p->parent = 0;
         p->name[0] = 0;
         p->killed = 0;
+        if (status)
+          *status = p->exitstatus;
         release(&ptable.lock);
         return pid;
       }
@@ -246,11 +258,56 @@ wait(void)
     // No point waiting if we don't have any children.
     if(!havekids || proc->killed){
       release(&ptable.lock);
+      if (status)
+        *status = -1;
       return -1;
     }
 
     // Wait for children to exit.  (See wakeup1 call in proc_exit.)
     sleep(proc, &ptable.lock);  //DOC: wait-sleep
+  }
+}
+
+// Wait for a child process to exit and return its pid.
+// Return -1 if this process has no children.
+int
+waitpid(int pid, int *status, int option)
+{
+  struct proc *p;
+  int found = 0;
+
+  acquire(&ptable.lock);
+  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if(p->pid != pid)
+      continue;
+    else {
+      found = 1;
+      break;
+    }
+  }
+  if (!found) {
+    release(&ptable.lock);
+    if (status)
+      *status = -1;
+    return -1;
+  } else {
+    for (;;) {
+      if(p->state == ZOMBIE) {
+        kfree(p->kstack);
+        p->kstack = 0;
+        freevm(p->pgdir);
+        p->state = UNUSED;
+        p->pid = 0;
+        p->parent = 0;
+        p->name[0] = 0;
+        p->killed = 0;
+        if (status)
+          *status = p->exitstatus;
+        release(&ptable.lock);
+        return(pid);
+      }
+      sleep(proc, &ptable.lock);
+    }
   }
 }
 
@@ -266,6 +323,9 @@ void
 scheduler(void)
 {
   struct proc *p;
+  // Lab 01
+  struct proc *np;// = 0;
+  // end lab 01
 
   for(;;){
     // Enable interrupts on this processor.
@@ -273,6 +333,26 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
+    // lab 01
+    do {
+      np = ptable.proc;
+      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if(p->state != RUNNABLE)
+          continue;
+        if (np->priority < p->priority)
+          np = p;
+      }
+      if (np->state == RUNNABLE) {
+        proc = np;
+        switchuvm(np);
+        np->state = RUNNING;
+        swtch(&cpu->scheduler, proc->context);
+        switchkvm();
+
+        proc = 0;
+      }
+    } while (np->priority > 0);
+    // end lab 01
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;

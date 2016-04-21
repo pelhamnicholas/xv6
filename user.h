@@ -25,6 +25,7 @@ int sleep(int);
 int uptime(void);
 int waitpid(int, int*, int);
 int setpriority(int);
+int getpriority(void);
 int count(void);
 
 // ulib.c

@@ -24,6 +24,12 @@ sys_setpriority(void)
 }
 
 int
+sys_getpriority(void)
+{
+    return getpriority();
+}
+
+int
 sys_fork(void)
 {
   return fork();

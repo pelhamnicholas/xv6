@@ -108,6 +108,7 @@ struct proc*    copyproc(struct proc*);
 void            exit(int);
 int             fork(void);
 int             setpriority(int);
+int             getpriority(void);
 int             growproc(int);
 int             kill(int);
 void            pinit(void);

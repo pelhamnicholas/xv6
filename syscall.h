@@ -22,4 +22,5 @@
 #define SYS_close       21
 #define SYS_waitpid     22
 #define SYS_setpriority 23
-#define SYS_count       24
+#define SYS_getpriority 24
+#define SYS_count       25

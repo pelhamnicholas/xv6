@@ -67,8 +67,15 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
   int exitstatus;              // Proces exit status
-  unsigned char priority;      // Process priority 0-63
+  int priority;                // Process priority 0-63
+  int basepriority;            // used for priority donating
+  uint starttime;              // Used to test priority
+  uint endtime;                //
+  uint runtime;                //
 };
+
+// Additional temp variable for time
+uint temptime;
 
 // Process memory is laid out contiguously, low addresses first:
 //   text

@@ -26,6 +26,12 @@ pinit(void)
   initlock(&ptable.lock, "ptable");
 }
 
+int
+getpriority(void)
+{
+    return (int) proc->priority;
+}
+
 //PAGEBREAK: 32
 // Look in the process table for an UNUSED proc.
 // If found, change state to EMBRYO and initialize
@@ -145,7 +151,7 @@ fork(void)
   np->sz = proc->sz;
   np->parent = proc;
   *np->tf = *proc->tf;
-  np->priority = 0; // init priority
+  np->basepriority = np->priority = proc->priority; // init priority
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
@@ -161,7 +167,13 @@ fork(void)
 
   // lock to force the compiler to emit the np->state write last.
   acquire(&ptable.lock);
+  //acquire(&tickslock);
   np->state = RUNNABLE;
+  np->starttime = ticks;
+  np->runtime = 0;
+  proc->runtime += temptime - np->starttime;
+  temptime = np->starttime;
+  //release(&tickslock);
   release(&ptable.lock);
   
   return pid;
@@ -214,6 +226,16 @@ exit(int status)
         wakeup1(initproc);
     }
   }
+
+  // Time info
+  //acquire(&tickslock);
+  proc->endtime = ticks;
+  proc->runtime += proc->endtime - temptime;
+  //release(&tickslock);
+  cprintf("[%d] Start time:   %d\n", proc->pid, proc->starttime);
+  cprintf("     End time:     %d\n", proc->endtime);
+  cprintf("     Running time: %d\n", proc->runtime);
+  cprintf("     Total time:   %d\n", proc->endtime - proc->starttime);
 
   // Jump into the scheduler, never to return.
   proc->state = ZOMBIE;
@@ -306,7 +328,10 @@ waitpid(int pid, int *status, int option)
         release(&ptable.lock);
         return(pid);
       }
-      sleep(proc, &ptable.lock);
+      //sleep(proc, &ptable.lock);
+      release(&ptable.lock);
+      yield();
+      acquire(&ptable.lock);
     }
   }
 }
@@ -323,9 +348,8 @@ void
 scheduler(void)
 {
   struct proc *p;
-  // Lab 01
-  struct proc *np;// = 0;
-  // end lab 01
+  //struct proc *np, *lp;
+  unsigned char priority;
 
   for(;;){
     // Enable interrupts on this processor.
@@ -333,7 +357,9 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    // lab 01
+
+    priority = 0;
+    /*
     do {
       np = ptable.proc;
       for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
@@ -346,15 +372,27 @@ scheduler(void)
         proc = np;
         switchuvm(np);
         np->state = RUNNING;
+        temptime = ticks;
         swtch(&cpu->scheduler, proc->context);
         switchkvm();
 
         proc = 0;
       }
     } while (np->priority > 0);
-    // end lab 01
+    */
+    // Find highest priority level in runnable processes
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+      if(p->state != RUNNABLE)
+        continue;
+      if (priority < p->priority)
+        priority = p->priority;
+    }
+
+    // Round robin all processes of highest priority
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
+        continue;
+      if(p->priority < priority)
         continue;
 
       // Switch to chosen process.  It is the process's job
@@ -363,6 +401,7 @@ scheduler(void)
       proc = p;
       switchuvm(p);
       p->state = RUNNING;
+      temptime = ticks;
       swtch(&cpu->scheduler, proc->context);
       switchkvm();
 
@@ -381,6 +420,13 @@ void
 sched(void)
 {
   int intena;
+
+  // time debug
+  //acquire(&tickslock);
+  if (proc->state != ZOMBIE)
+    proc->runtime += ticks - temptime;
+  //release(&tickslock);
+  // end time debug
 
   if(!holding(&ptable.lock))
     panic("sched ptable.lock");

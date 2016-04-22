@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
       for (n = 0; n < MAXFORKS; n++) {
         pid = fork();
         if (pid == 0) {
-          setpriority(MAXFORKS - n);
+          setpriority(n);
           break;
         } else if (pid > 0) {
           setpriority(64);
@@ -66,17 +66,17 @@ int main(int argc, char *argv[]) {
       for (i = 0; i < 104857555; i++)
         cnt = (i % 2) ? cnt + i : cnt - i;
       if (pid > 0) {
-        printf(1, "[%d] was used to create all other priority processes.\n", (int) getpid());
-        printf(1, "[%d] waiting for all children to exit.\n", (int) getpid());
-        while((wpid=wait(&status)) >= 0 && wpid != pid)
+        printf(1, "\n[%d] was used to create all other priority processes.\n", (int) getpid());
+        printf(1, "[%d] waiting for all children to exit.\n\n", (int) getpid());
+        while((wpid=wait(&status)) >= 0)// && wpid != pid)
           ;
         }
-      printf(1, "[%d] has priority: %d\n", (int) getpid(), getpriority());
+      printf(1, "\n[%d] has priority: %d\n", (int) getpid(), getpriority());
       exit(0);
   } else if (cpid > 0) {
     for (i = 0; i < 104857555; i++)
       cnt = (i % 2) ? cnt + i : cnt - i;
-    printf(1, "Parent [%d] has priority: %d\n", (int) getpid(), getpriority());
+    printf(1, "\nParent [%d] has priority: %d\n", (int) getpid(), getpriority());
   } else {
     printf(2, "fail\n");
     exit(-1);

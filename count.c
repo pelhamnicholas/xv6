@@ -12,6 +12,6 @@
 
 int main(int argc, char *argv[]) {
   printf(1, "System call count: %d\n", count());
-  exit(1);
+  exit(0);
   return -1;
 }

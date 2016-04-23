@@ -45,6 +45,15 @@ sys_exit(void)
 }
 
 int
+sys_exitinfo(void)
+{
+  int status;
+  argint(0, &status);
+  exitinfo(status);
+  return 0;  // not reached
+}
+
+int
 sys_wait(void)
 {
   int *status;

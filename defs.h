@@ -8,6 +8,7 @@ struct rtcdate;
 struct spinlock;
 struct stat;
 struct superblock;
+struct node;
 
 // bio.c
 void            binit(void);
@@ -122,6 +123,7 @@ int             waitpid(int, int*, int);
 void            wakeup(void*);
 void            yield(void);
 int 		count(void);
+void            exitinfo(int);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

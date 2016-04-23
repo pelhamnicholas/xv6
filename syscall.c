@@ -104,6 +104,7 @@ extern int sys_waitpid(void);
 extern int sys_setpriority(void);
 extern int sys_getpriority(void);
 extern int sys_count(void);
+extern int sys_exitinfo(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]        sys_fork,
@@ -131,6 +132,7 @@ static int (*syscalls[])(void) = {
 [SYS_setpriority] sys_setpriority,
 [SYS_getpriority] sys_getpriority,
 [SYS_count]       sys_count,
+[SYS_exitinfo]    sys_exitinfo,
 };
 
 void

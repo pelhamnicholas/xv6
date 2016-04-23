@@ -76,12 +76,13 @@ int main(int argc, char *argv[]) {
   } else if (cpid > 0) {
     for (i = 0; i < 104857555; i++)
       cnt = (i % 2) ? cnt + i : cnt - i;
+    cpid = wait(0);
     printf(1, "\nParent [%d] has priority: %d\n", (int) getpid(), getpriority());
   } else {
     printf(2, "fail\n");
     exit(-1);
   }
 
-  cpid = wait(0);
-  exit(0);
+  //cpid = wait(0);
+  exitinfo(0);
 }

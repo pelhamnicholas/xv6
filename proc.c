@@ -32,6 +32,23 @@ getpriority(void)
     return (int) proc->priority;
 }
 
+void
+givepriority(struct proc *p)
+{
+    acquire(&ptable.lock);
+    if(p->priority < proc->priority)
+        p->priority = proc->priority;
+    release(&ptable.lock);
+}
+
+void
+resetpriority()
+{
+    acquire(&ptable.lock);
+    proc->priority = proc->basepriority;
+    release(&ptable.lock);
+}
+
 //PAGEBREAK: 32
 // Look in the process table for an UNUSED proc.
 // If found, change state to EMBRYO and initialize
@@ -167,13 +184,11 @@ fork(void)
 
   // lock to force the compiler to emit the np->state write last.
   acquire(&ptable.lock);
-  //acquire(&tickslock);
   np->state = RUNNABLE;
   np->starttime = ticks;
   np->runtime = 0;
   proc->runtime += temptime - np->starttime;
   temptime = np->starttime;
-  //release(&tickslock);
   release(&ptable.lock);
   
   return pid;
@@ -217,6 +232,9 @@ exit(int status)
 
   // Parent might be sleeping in wait().
   wakeup1(proc->parent);
+
+  // Wakeup any process sleeping in waitpid().
+  wakeup1(proc);
 
   // Pass abandoned children to init.
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
@@ -262,6 +280,9 @@ exitinfo(int status)
   // Parent might be sleeping in wait().
   wakeup1(proc->parent);
 
+  // Wakeup any process sleeping in waitpid().
+  wakeup1(proc);
+
   // Pass abandoned children to init.
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->parent == proc){
@@ -272,14 +293,13 @@ exitinfo(int status)
   }
 
   // Time info
-  //acquire(&tickslock);
   proc->endtime = ticks;
   proc->runtime += proc->endtime - temptime;
-  //release(&tickslock);
-  cprintf("[%d] Start time:   %d\n", proc->pid, proc->starttime);
-  cprintf("     End time:     %d\n", proc->endtime);
-  cprintf("     Running time: %d\n", proc->runtime);
-  cprintf("     Total time:   %d\n", proc->endtime - proc->starttime);
+  cprintf("[%d] Start time:    %d\n", proc->pid, proc->starttime);
+  cprintf("     End time:      %d\n", proc->endtime);
+  cprintf("     Running time:  %d\n", proc->runtime);
+  cprintf("     Response time: %d\n", proc->responsetime);
+  cprintf("     Total time:    %d\n", proc->endtime - proc->starttime);
 
   // Jump into the scheduler, never to return.
   proc->state = ZOMBIE;
@@ -372,10 +392,7 @@ waitpid(int pid, int *status, int option)
         release(&ptable.lock);
         return(pid);
       }
-      //sleep(proc, &ptable.lock);
-      release(&ptable.lock);
-      yield();
-      acquire(&ptable.lock);
+      sleep(p, &ptable.lock);
     }
   }
 }
@@ -428,6 +445,8 @@ scheduler(void)
           switchuvm(p);
           p->state = RUNNING;
           temptime = ticks;
+          if(p->runtime == 0)
+            p->responsetime = temptime - p->starttime;
           swtch(&cpu->scheduler, proc->context);
           switchkvm();
 
@@ -449,10 +468,7 @@ sched(void)
   int intena;
 
   // time debug
-  //acquire(&tickslock);
-  if (proc->state != ZOMBIE)
-    proc->runtime += ticks - temptime;
-  //release(&tickslock);
+  proc->runtime += ticks - temptime;
   // end time debug
 
   if(!holding(&ptable.lock))
@@ -507,8 +523,9 @@ sleep(void *chan, struct spinlock *lk)
   if(proc == 0)
     panic("sleep");
 
-  if(lk == 0)
-    panic("sleep without lk");
+  // Why would this cause panic?
+  //if(lk == 0)
+  //  panic("sleep without lk");
 
   // Must acquire ptable.lock in order to
   // change p->state and then call sched.
@@ -518,7 +535,8 @@ sleep(void *chan, struct spinlock *lk)
   // so it's okay to release lk.
   if(lk != &ptable.lock){  //DOC: sleeplock0
     acquire(&ptable.lock);  //DOC: sleeplock1
-    release(lk);
+    if(lk)
+      release(lk);
   }
 
   // Go to sleep.
@@ -532,7 +550,8 @@ sleep(void *chan, struct spinlock *lk)
   // Reacquire original lock.
   if(lk != &ptable.lock){  //DOC: sleeplock2
     release(&ptable.lock);
-    acquire(lk);
+    if(lk)
+      acquire(lk);
   }
 }
 

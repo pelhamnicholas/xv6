@@ -72,6 +72,7 @@ struct proc {
   uint starttime;              // Used to test priority
   uint endtime;                //
   uint runtime;                //
+  uint responsetime;           //
 };
 
 // Additional temp variable for time

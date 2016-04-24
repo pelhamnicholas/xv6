@@ -15,36 +15,36 @@ int main(int argc, char *argv[]) {
 
   printf(1, "\nStarting...\n");
 
-  printf(1, "\nTesting exit(int) and wait(int*)\n");
+  printf(1, "\nTesting exitinfo(int) and wait(int*)\n");
   pid = fork();
   if (pid == 0) { // child
     printf(1, "Child [%d]: Exiting with status 0\n", (int) getpid());
     for (i = 0; i < 2097151; i++)
       cnt = (i % 2) ? cnt + i : cnt - i;
-    exit(0);
+    exitinfo(0);
   } else if (pid > 0) { // parent
     cpid = (int) wait(&status);
     printf(1, "Parent [%d]: cpid was %d\n", (int) getpid(), cpid);
     printf(1, "Child exit status was %d\n", status);
   } else {
     printf(2, "fail\n");
-    exit(-1);
+    exitinfo(-1);
   }
 
-  printf(1, "\nTesting exit(int) and waitpid(int, int*, int)\n");
+  printf(1, "\nTesting exitinfo(int) and waitpid(int, int*, int)\n");
   pid = fork();
   if (pid == 0) {
     printf(1, "Child [%d]: Exiting with status 1\n", (int) getpid());
     for (i = 0; i < 2097151; i++)
       cnt = (i % 2) ? cnt + i : cnt - i;
-    exit(1);
+    exitinfo(1);
   } else if (pid > 0) {
     cpid = (int) waitpid(pid, &status, 0);
     printf(1, "Parent [%d]: cpid was %d\n", (int) getpid(), cpid);
     printf(1, "Child exit status was %d\n", status);
   } else {
     printf(2, "fail\n");
-    exit(-1);
+    exitinfo(-1);
   }
   
   printf(1, "\nTesting priority scheduler\n");
@@ -54,13 +54,13 @@ int main(int argc, char *argv[]) {
       for (n = 0; n < MAXFORKS; n++) {
         pid = fork();
         if (pid == 0) {
-          setpriority(n);
+          setpriority(n+1);
           break;
         } else if (pid > 0) {
-          setpriority(64);
+          setpriority(63);
         } else {
           printf(1, "fail\n");
-          exit(-1);
+          exitinfo(-1);
         }
       }
       for (i = 0; i < 104857555; i++)
@@ -72,17 +72,14 @@ int main(int argc, char *argv[]) {
           ;
         }
       printf(1, "\n[%d] has priority: %d\n", (int) getpid(), getpriority());
-      exit(0);
+      exitinfo(0);
   } else if (cpid > 0) {
-    for (i = 0; i < 104857555; i++)
-      cnt = (i % 2) ? cnt + i : cnt - i;
-    cpid = wait(0);
+    cpid = waitpid(cpid, 0, 0);
     printf(1, "\nParent [%d] has priority: %d\n", (int) getpid(), getpriority());
   } else {
     printf(2, "fail\n");
-    exit(-1);
+    exitinfo(-1);
   }
 
-  //cpid = wait(0);
   exitinfo(0);
 }

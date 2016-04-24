@@ -8,7 +8,7 @@ struct rtcdate;
 struct spinlock;
 struct stat;
 struct superblock;
-struct node;
+struct ticketlock;
 
 // bio.c
 void            binit(void);
@@ -110,6 +110,8 @@ void            exit(int);
 int             fork(void);
 int             setpriority(int);
 int             getpriority(void);
+void            givepriority(struct proc*);
+void            resetpriority();
 int             growproc(int);
 int             kill(int);
 void            pinit(void);
@@ -117,6 +119,7 @@ void            procdump(void);
 void            scheduler(void) __attribute__((noreturn));
 void            sched(void);
 void            sleep(void*, struct spinlock*);
+void            sleep_t(void*, struct ticketlock*);
 void            userinit(void);
 int             wait(int*);
 int             waitpid(int, int*, int);
@@ -153,6 +156,12 @@ int             argstr(int, char**);
 int             fetchint(uint, int*);
 int             fetchstr(uint, char**);
 void            syscall(void);
+
+// ticketlock.c
+void            acquire_t(struct ticketlock*);
+void            initlock_t(struct ticketlock*, char*);
+void            release_t(struct ticketlock*);
+int             holding_t(struct ticketlock*);
 
 // timer.c
 void            timerinit(void);

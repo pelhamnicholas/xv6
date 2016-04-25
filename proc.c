@@ -295,11 +295,13 @@ exitinfo(int status)
   // Time info
   proc->endtime = ticks;
   proc->runtime += proc->endtime - temptime;
-  cprintf("[%d] Start time:    %d\n", proc->pid, proc->starttime);
-  cprintf("     End time:      %d\n", proc->endtime);
-  cprintf("     Running time:  %d\n", proc->runtime);
-  cprintf("     Response time: %d\n", proc->responsetime);
-  cprintf("     Total time:    %d\n", proc->endtime - proc->starttime);
+  cprintf("[%d] Start time:      %d\n", proc->pid, proc->starttime);
+  cprintf("      End time:        %d\n", proc->endtime);
+  cprintf("      Turnaround time: %d\n", proc->endtime - proc->starttime);
+  cprintf("      Response time:   %d\n", proc->responsetime);
+  cprintf("      Running time:    %d\n", proc->runtime);
+  cprintf("      Waiting time:    %d\n", proc->endtime - proc->starttime 
+                                                       - proc->runtime);
 
   // Jump into the scheduler, never to return.
   proc->state = ZOMBIE;

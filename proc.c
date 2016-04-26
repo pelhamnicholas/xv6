@@ -10,6 +10,16 @@
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
+  int priority[NPROC];
+  struct {
+      int num_p;
+      int response;
+      int running;
+      int waiting;
+      int turnaround;
+  } t_info[MAXPRIORITY+1];
+  uint t_infostart;
+  uint t_infoend;
 } ptable;
 
 static struct proc *initproc;
@@ -23,7 +33,49 @@ static void wakeup1(void *chan);
 void
 pinit(void)
 {
+  int i;
+
   initlock(&ptable.lock, "ptable");
+  for(i = 0; i < MAXPRIORITY+1; i++)
+    ptable.priority[i] = 0;
+  ptable.t_infostart = 0;
+}
+
+void
+schedinfoinit(void)
+{
+  int i;
+  for(i = 0; i < MAXPRIORITY+1; i++) {
+    ptable.t_info[i].num_p = 0;
+    ptable.t_info[i].response = 0;
+    ptable.t_info[i].running = 0;
+    ptable.t_info[i].waiting = 0;
+    ptable.t_info[i].turnaround = 0;
+  }
+  ptable.t_infostart = ticks;
+}
+
+void
+schedinfo(void)
+{
+  int i;
+  ptable.t_infoend = ticks;
+
+  for(i = 0; i < MAXPRIORITY+1; i++) {
+    if(ptable.t_info[i].num_p > 0) {
+      cprintf("Processes Averaged at Priority %d: %d\n", 
+              i, ptable.t_info[i].num_p);
+      cprintf("  Response Time:                   %d\n", 
+              ptable.t_info[i].response);
+      cprintf("  Running Time:                    %d\n", 
+              ptable.t_info[i].running);
+      cprintf("  Waiting Time:                    %d\n", 
+              ptable.t_info[i].waiting);
+      cprintf("  Turnaround Time:                 %d\n", 
+              ptable.t_info[i].turnaround);
+    }
+  }
+  return;
 }
 
 int
@@ -197,8 +249,15 @@ fork(void)
 // Set the current process's priority.
 int
 setpriority (int priority) {
-  proc->priority = priority;
+  //acquire(&ptable.lock);
+  if(priority > MAXPRIORITY)
+    proc->priority = MAXPRIORITY;
+  else if(priority < 0)
+    proc->priority = 0;
+  else
+    proc->priority = priority;
   return proc->priority;
+  //release(&ptable.lock);
 }
 
 // Exit the current process.  Does not return.
@@ -243,6 +302,32 @@ exit(int status)
       if(p->state == ZOMBIE)
         wakeup1(initproc);
     }
+  }
+
+  // Time info
+  proc->endtime = ticks;
+  proc->turnaroundtime = proc->endtime - proc->starttime;
+  proc->runtime += proc->endtime - temptime;
+  // update ptable.t_info
+  if(ptable.t_infostart != 0) {
+    ptable.t_info[proc->priority].response =
+          (ptable.t_info[proc->priority].response
+            * ptable.t_info[proc->priority].num_p + proc->responsetime) 
+            / (ptable.t_info[proc->priority].num_p + 1);
+    ptable.t_info[proc->priority].running = 
+          (ptable.t_info[proc->priority].running 
+            * ptable.t_info[proc->priority].num_p
+            + proc->runtime) / (ptable.t_info[proc->priority].num_p + 1);
+    ptable.t_info[proc->priority].waiting = 
+          (ptable.t_info[proc->priority].waiting 
+            * ptable.t_info[proc->priority].num_p
+            + (proc->turnaroundtime - proc->runtime)) 
+            / (ptable.t_info[proc->priority].num_p + 1);
+    ptable.t_info[proc->priority].turnaround = 
+          (ptable.t_info[proc->priority].turnaround 
+            * ptable.t_info[proc->priority].num_p
+            + proc->turnaroundtime) / (ptable.t_info[proc->priority].num_p + 1);
+    ptable.t_info[proc->priority].num_p++;
   }
 
   // Jump into the scheduler, never to return.
@@ -294,14 +379,36 @@ exitinfo(int status)
 
   // Time info
   proc->endtime = ticks;
+  proc->turnaroundtime = proc->endtime - proc->starttime;
   proc->runtime += proc->endtime - temptime;
+  // update ptable.t_info
+  if(ptable.t_infostart != 0) {
+    ptable.t_info[proc->priority].response =
+          (ptable.t_info[proc->priority].response
+            * ptable.t_info[proc->priority].num_p + proc->responsetime) 
+            / (ptable.t_info[proc->priority].num_p + 1);
+    ptable.t_info[proc->priority].running = 
+          (ptable.t_info[proc->priority].running 
+            * ptable.t_info[proc->priority].num_p
+            + proc->runtime) / (ptable.t_info[proc->priority].num_p + 1);
+    ptable.t_info[proc->priority].waiting = 
+          (ptable.t_info[proc->priority].waiting 
+            * ptable.t_info[proc->priority].num_p
+            + (proc->turnaroundtime - proc->runtime)) 
+            / (ptable.t_info[proc->priority].num_p + 1);
+    ptable.t_info[proc->priority].turnaround = 
+          (ptable.t_info[proc->priority].turnaround 
+            * ptable.t_info[proc->priority].num_p
+            + proc->turnaroundtime) / (ptable.t_info[proc->priority].num_p + 1);
+    ptable.t_info[proc->priority].num_p++;
+  }
+  // print individual process info
   cprintf("[%d] Start time:      %d\n", proc->pid, proc->starttime);
-  cprintf("      End time:        %d\n", proc->endtime);
-  cprintf("      Turnaround time: %d\n", proc->endtime - proc->starttime);
-  cprintf("      Response time:   %d\n", proc->responsetime);
-  cprintf("      Running time:    %d\n", proc->runtime);
-  cprintf("      Waiting time:    %d\n", proc->endtime - proc->starttime 
-                                                       - proc->runtime);
+  cprintf("     End time:        %d\n", proc->endtime);
+  cprintf("     Turnaround time: %d\n", proc->turnaroundtime);
+  cprintf("     Response time:   %d\n", proc->responsetime);
+  cprintf("     Running time:    %d\n", proc->runtime);
+  cprintf("     Waiting time:    %d\n", proc->turnaroundtime - proc->runtime);
 
   // Jump into the scheduler, never to return.
   proc->state = ZOMBIE;

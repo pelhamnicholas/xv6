@@ -28,6 +28,8 @@ int waitpid(int, int*, int);
 int setpriority(int);
 int getpriority(void);
 int count(void);
+void schedinfoinit(void);
+void schedinfo(void);
 
 // ulib.c
 int stat(char*, struct stat*);

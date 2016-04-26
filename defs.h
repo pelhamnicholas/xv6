@@ -125,7 +125,9 @@ int             wait(int*);
 int             waitpid(int, int*, int);
 void            wakeup(void*);
 void            yield(void);
-int 		count(void);
+int             count(void);
+void            schedinfoinit(void);
+void            schedinfo(void);
 void            exitinfo(int);
 
 // swtch.S

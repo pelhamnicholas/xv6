@@ -71,6 +71,7 @@ struct proc {
   int basepriority;            // used for priority donating
   uint starttime;              // Used to test priority
   uint endtime;                //
+  uint turnaroundtime;
   uint runtime;                //
   uint responsetime;           //
 };

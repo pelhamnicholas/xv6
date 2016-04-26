@@ -73,6 +73,20 @@ sys_waitpid(void)
 }
 
 int
+sys_schedinfoinit(void)
+{
+  schedinfoinit();
+  return 0;
+}
+
+int
+sys_schedinfo(void)
+{
+  schedinfo();
+  return 0;
+}
+
+int
 sys_kill(void)
 {
   int pid;

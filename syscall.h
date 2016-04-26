@@ -25,3 +25,5 @@
 #define SYS_getpriority 24
 #define SYS_count       25
 #define SYS_exitinfo    26
+#define SYS_schedinfoinit 27
+#define SYS_schedinfo     28

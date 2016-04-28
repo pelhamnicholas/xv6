@@ -15,6 +15,7 @@ initlock(struct spinlock *lk, char *name)
   lk->name = name;
   lk->locked = 0;
   lk->cpu = 0;
+  lk->proc = 0;
 }
 
 // Acquire the lock.
@@ -28,6 +29,10 @@ acquire(struct spinlock *lk)
   if(holding(lk))
     panic("acquire");
 
+  // Priority inheritence
+  //if(proc && proc->pid > 2)
+    //givepriority(lk->proc);
+
   // The xchg is atomic.
   // It also serializes, so that reads after acquire are not
   // reordered before it. 
@@ -36,6 +41,7 @@ acquire(struct spinlock *lk)
 
   // Record info about lock acquisition for debugging.
   lk->cpu = cpu;
+  lk->proc = proc;
   getcallerpcs(&lk, lk->pcs);
 }
 
@@ -46,8 +52,12 @@ release(struct spinlock *lk)
   if(!holding(lk))
     panic("release");
 
+  //if(proc && proc->pid > 2)
+    //resetpriority();
+
   lk->pcs[0] = 0;
   lk->cpu = 0;
+  lk->proc = 0;
 
   // The xchg serializes, so that reads before release are 
   // not reordered after it.  The 1996 PentiumPro manual (Volume 3,

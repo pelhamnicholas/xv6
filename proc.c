@@ -78,6 +78,20 @@ schedinfo(void)
   return;
 }
 
+// Set the current process's priority.
+int
+setpriority (int priority) {
+  //acquire(&ptable.lock);
+  if(priority > MAXPRIORITY)
+    proc->priority = MAXPRIORITY;
+  else if(priority < 0)
+    proc->priority = 0;
+  else
+    proc->priority = priority;
+  return proc->priority;
+  //release(&ptable.lock);
+}
+
 int
 getpriority(void)
 {
@@ -87,18 +101,18 @@ getpriority(void)
 void
 givepriority(struct proc *p)
 {
-    acquire(&ptable.lock);
+    //acquire(&ptable.lock);
     if(p->priority < proc->priority)
         p->priority = proc->priority;
-    release(&ptable.lock);
+    //release(&ptable.lock);
 }
 
 void
 resetpriority()
 {
-    acquire(&ptable.lock);
+    //acquire(&ptable.lock);
     proc->priority = proc->basepriority;
-    release(&ptable.lock);
+    //release(&ptable.lock);
 }
 
 //PAGEBREAK: 32
@@ -244,20 +258,6 @@ fork(void)
   release(&ptable.lock);
   
   return pid;
-}
-
-// Set the current process's priority.
-int
-setpriority (int priority) {
-  //acquire(&ptable.lock);
-  if(priority > MAXPRIORITY)
-    proc->priority = MAXPRIORITY;
-  else if(priority < 0)
-    proc->priority = 0;
-  else
-    proc->priority = priority;
-  return proc->priority;
-  //release(&ptable.lock);
 }
 
 // Exit the current process.  Does not return.

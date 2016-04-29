@@ -149,3 +149,25 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+// priority inheritance testing
+int
+sys_test_init(void)
+{
+  test_init();
+  return 0;
+}
+
+int
+sys_update_num(void)
+{
+  int i;
+  i = argint(0, &i);
+  return update_num(i);
+}
+
+int
+sys_get_num(void)
+{
+  return get_num();
+}

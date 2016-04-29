@@ -107,6 +107,9 @@ extern int sys_count(void);
 extern int sys_exitinfo(void);
 extern int sys_schedinfoinit(void);
 extern int sys_schedinfo(void);
+extern int sys_test_init(void);
+extern int sys_update_num(void);
+extern int sys_get_num(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]          sys_fork,
@@ -137,6 +140,9 @@ static int (*syscalls[])(void) = {
 [SYS_exitinfo]      sys_exitinfo,
 [SYS_schedinfoinit] sys_schedinfoinit,
 [SYS_schedinfo]     sys_schedinfo,
+[SYS_test_init]     sys_test_init,
+[SYS_update_num]     sys_update_num,
+[SYS_get_num]     sys_get_num,
 };
 
 void

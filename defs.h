@@ -159,6 +159,11 @@ int             fetchint(uint, int*);
 int             fetchstr(uint, char**);
 void            syscall(void);
 
+//sys_test.c
+void			test_init(void);
+int				update_num(int);
+int				get_num(void);
+
 // ticketlock.c
 void            acquire_t(struct ticketlock*);
 void            initlock_t(struct ticketlock*, char*);

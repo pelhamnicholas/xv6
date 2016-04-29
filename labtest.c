@@ -67,10 +67,10 @@ int main(int argc, char *argv[]) {
       for (i = 0; i < 104857555; i++)
         cnt = (i % 2) ? cnt + i : cnt - i;
       if (pid > 0) {
-        while((wpid=wait(&status)) >= 0)// && wpid != pid)
-          ;
         printf(1, "\n[%d] was used to create ten processes of ascending priority.\n", (int) getpid());
         printf(1, "[%d] waiting for all children to exit.\n\n", (int) getpid());
+        while((wpid=wait(&status)) >= 0)// && wpid != pid)
+          ;
         }
       printf(1, "\n[%d] has priority: %d\n", (int) getpid(), getpriority());
       exit(0);
@@ -100,9 +100,10 @@ int main(int argc, char *argv[]) {
       for (i = 0; i < 104857555; i++)
         cnt = (i % 2) ? cnt + i : cnt - i;
       if (pid > 0) {
+        printf(1, "\n[%d] was used to create ten processes of descending priority.\n", (int) getpid());
+        printf(1, "[%d] waiting for all children to exit.\n\n", (int) getpid());
         while((wpid=wait(&status)) >= 0)// && wpid != pid)
           ;
-        printf(1, "\n[%d] was used to create ten processes of descending priority.\n", (int) getpid());
         }
       printf(1, "\n[%d] has priority: %d\n", (int) getpid(), getpriority());
       exit(0);

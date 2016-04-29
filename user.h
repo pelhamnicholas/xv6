@@ -30,6 +30,10 @@ int getpriority(void);
 int count(void);
 void schedinfoinit(void);
 void schedinfo(void);
+//
+void test_init(void);
+int update_num(int);
+int get_num(void);
 
 // ulib.c
 int stat(char*, struct stat*);

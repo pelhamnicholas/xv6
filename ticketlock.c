@@ -29,10 +29,10 @@ acquire_t(struct ticketlock *lk)
     panic("acquire");
 
   ticket = fetch_and_add(&lk->ticket, 1);
-  while(lk->turn != ticket) {
+  if(lk->turn != ticket)
     givepriority(lk->holder);
-    sleep(lk, 0);
-  }
+  while(lk->turn != ticket)
+    ;
 
   // Record info about lock acquisition for debugging.
   lk->cpu = cpu;
@@ -50,7 +50,7 @@ release_t(struct ticketlock *lk)
   lk->holder = 0;
   lk->cpu = 0;
 
-  fetch_and_add(&lk->turn, 1);
+  lk->turn++; //fetch_and_add(&lk->turn, 1);
   wakeup(lk);
   resetpriority();
 

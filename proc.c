@@ -29,6 +29,7 @@ extern void forkret(void);
 extern void trapret(void);
 
 static void wakeup1(void *chan);
+static int wakeup_more(void *chan);
 
 void
 pinit(void)
@@ -293,7 +294,8 @@ exit(int status)
   wakeup1(proc->parent);
 
   // Wakeup any process sleeping in waitpid().
-  wakeup1(proc);
+  while(wakeup_more(proc))
+	;
 
   // Pass abandoned children to init.
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
@@ -366,7 +368,8 @@ exitinfo(int status)
   wakeup1(proc->parent);
 
   // Wakeup any process sleeping in waitpid().
-  wakeup1(proc);
+  while(wakeup_more(proc))
+	;
 
   // Pass abandoned children to init.
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
@@ -500,7 +503,12 @@ waitpid(int pid, int *status, int option)
           *status = p->exitstatus;
         release(&ptable.lock);
         return(pid);
-      }
+      } else if (p->state == UNUSED) {
+        if (status)
+          *status = p->exitstatus;
+        release(&ptable.lock);
+        return(pid);
+	  }
       sleep(p, &ptable.lock);
     }
   }
@@ -539,13 +547,15 @@ scheduler(void)
     }
 
     // Round robin all processes of highest priority
-    for ( ; priority >= 0; priority--) {
+    //for ( ; priority >= 0; priority--) {
 
         for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
           if(p->state != RUNNABLE)
             continue;
           if(p->priority < priority)
             continue;
+          if(p->priority > priority)
+            break;
 
           // Switch to chosen process.  It is the process's job
           // to release ptable.lock and then reacquire it
@@ -563,7 +573,7 @@ scheduler(void)
           // It should have changed its p->state before coming back.
           proc = 0;
         }
-    }
+    //}
     release(&ptable.lock);
 
   }
@@ -675,6 +685,22 @@ wakeup1(void *chan)
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == SLEEPING && p->chan == chan)
       p->state = RUNNABLE;
+}
+
+static int
+wakeup_more(void *chan)
+{
+  struct proc *p;
+  int wokeup = 0;
+
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+	if(p->state == SLEEPING && p->chan == chan) {
+	  p->state = RUNNABLE;
+	  wokeup++;
+	}
+  }
+
+  return wokeup;
 }
 
 // Wake up all processes sleeping on chan.

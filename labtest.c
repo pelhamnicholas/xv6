@@ -28,6 +28,26 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  if (argc > 1 && option == 0) {
+      printf(1, "Incorrect options. Valid choices are:\n");
+      printf(1, "  -status          : Tests the status flag using both \n");
+      printf(1, "                     exit(int) and wait(int*).\n");
+      printf(1, "  -waitpid         : Tests the waitpid system call by\n");
+      printf(1, "                     creating 30 processes and having\n");
+      printf(1, "                     4 of them wait on a single one.\n");
+      printf(1, "  -scheduler       : Tests the priority scheduler by\n");
+      printf(1, "                     creating 30 processes of ascending\n");
+      printf(1, "                     priority, and then 30 processes of\n");
+      printf(1, "                     descending priority.\n");
+      printf(1, "  -inheritance     : Tests the proprotiy inheritance using\n");
+      printf(1, "                     some test system calls to use a lock\n");
+      printf(1, "                     created specifically for the test.\n");
+      printf(1, "  -performance     : Prints performance data for processes\n");
+      printf(1, "                     running at each priority level. The \n");
+      printf(1, "                     values are running averages.\n");
+      exit(0);
+  }
+
   printf(1, "\nStarting...\n", option);
 
   if (option & 0x10)
@@ -70,7 +90,8 @@ int main(int argc, char *argv[]) {
         if (getpid() == parent + 3) {
           for (i = 0; i < 33554431; i++)
             cnt = (i % 2) ? cnt + i : cnt - i;
-        } else if ((getpid() == parent + 7) || (getpid() == parent + 13)) {
+        } else if ((getpid() == parent + 7) || (getpid() == parent + 13)
+                || (getpid() == parent + 17) || (getpid() == parent + 23)) {
           printf(1, "[%d]: Waiting on %d\n", getpid(), parent + 3);
           wpid = waitpid(parent + 3, &status, 0);
           printf(1, "[%d]: Done waiting on %d\n whose exit status was %d\n", 

@@ -37,8 +37,10 @@ pinit(void)
   int i;
 
   initlock(&ptable.lock, "ptable");
-  for(i = 0; i < MAXPRIORITY+1; i++)
-    ptable.priority[i] = 0;
+  for(i = 0; i < MAXPRIORITY+1; i++) {
+    ptable.proc->priority = 0;
+    ptable.proc->basepriority = 0;
+  }
   ptable.t_infostart = 0;
 }
 
@@ -86,9 +88,9 @@ setpriority (int priority) {
   if(priority > MAXPRIORITY)
     proc->priority = MAXPRIORITY;
   else if(priority < 0)
-    proc->priority = 0;
+    proc->basepriority = proc->priority = 0;
   else
-    proc->priority = priority;
+    proc->basepriority = proc->priority = priority;
   return proc->priority;
   //release(&ptable.lock);
 }
@@ -96,24 +98,31 @@ setpriority (int priority) {
 int
 getpriority(void)
 {
-    return (int) proc->priority;
+  return (int) proc->priority;
 }
 
 void
 givepriority(struct proc *p)
 {
-    //acquire(&ptable.lock);
-    if(p->priority < proc->priority)
-        p->priority = proc->priority;
-    //release(&ptable.lock);
+  acquire(&ptable.lock);
+  if(p->priority < proc->priority) {
+    cprintf("[%d] inherited priority %d from %d\n", p->pid, proc->priority, 
+            proc->pid);
+    p->priority = proc->priority;
+  }
+  release(&ptable.lock);
 }
 
 void
 resetpriority()
 {
-    //acquire(&ptable.lock);
-    proc->priority = proc->basepriority;
-    //release(&ptable.lock);
+    acquire(&ptable.lock);
+    if (proc->priority != proc->basepriority) {
+      cprintf("[%d] priority restored to %d from inherited %d\n", 
+              proc->pid, proc->basepriority, proc->priority);
+      proc->priority = proc->basepriority;
+    }
+    release(&ptable.lock);
 }
 
 //PAGEBREAK: 32
@@ -632,6 +641,42 @@ forkret(void)
   }
   
   // Return to "caller", actually trapret (see allocproc).
+}
+
+// Atomically release lock and sleep on chan.
+// Reacquires lock when awakened.
+void
+sleep_t(void *chan, struct ticketlock *lk)
+{
+  if(proc == 0)
+    panic("sleep");
+
+  // Why would this cause panic?
+  //if(lk == 0)
+  //  panic("sleep without lk");
+
+  // Must acquire ptable.lock in order to
+  // change p->state and then call sched.
+  // Once we hold ptable.lock, we can be
+  // guaranteed that we won't miss any wakeup
+  // (wakeup runs with ptable.lock locked),
+  // so it's okay to release lk.
+  acquire(&ptable.lock);  //DOC: sleeplock1
+  if(lk)
+    release_t(lk);
+
+  // Go to sleep.
+  proc->chan = chan;
+  proc->state = SLEEPING;
+  sched();
+
+  // Tidy up.
+  proc->chan = 0;
+
+  // Reacquire original lock.
+  release(&ptable.lock);
+  if(lk)
+    acquire_t(lk);
 }
 
 // Atomically release lock and sleep on chan.

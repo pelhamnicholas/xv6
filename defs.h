@@ -120,6 +120,7 @@ void            scheduler(void) __attribute__((noreturn));
 void            sched(void);
 void            sleep(void*, struct spinlock*);
 void            sleep_t(void*, struct ticketlock*);
+void            sleep_wlock(void*);
 void            userinit(void);
 int             wait(int*);
 int             waitpid(int, int*, int);

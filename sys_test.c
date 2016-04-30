@@ -26,8 +26,9 @@ int
 update_num(int i)
 {
   acquire_t(&lk);
+  cprintf("  Adding %d to num one at a time.\n", i);
   for( ; i > 0; i--) {
-	num++;
+    num++;
   }
   release_t(&lk);
   return num;

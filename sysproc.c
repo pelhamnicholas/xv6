@@ -162,7 +162,7 @@ int
 sys_update_num(void)
 {
   int i;
-  i = argint(0, &i);
+  argint(0, &i);
   return update_num(i);
 }
 

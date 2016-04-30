@@ -3,7 +3,7 @@ struct ticketlock {
   uint ticket;       // Is the lock held?
   uint turn;
 
-  struct proc *holder;
+  struct proc *proc;
   
   // For debugging:
   char *name;        // Name of lock.

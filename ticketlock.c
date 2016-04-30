@@ -14,7 +14,7 @@ void
 initlock_t(struct ticketlock *lk, char *name)
 {
   lk->name = name;
-  lk->holder = 0;
+  lk->proc = 0;
   lk->ticket = 0;
   lk->turn = 0;
 }
@@ -30,12 +30,13 @@ acquire_t(struct ticketlock *lk)
 
   ticket = fetch_and_add(&lk->ticket, 1);
   if(lk->turn != ticket)
-    givepriority(lk->holder);
+    givepriority(lk->proc);
   while(lk->turn != ticket)
     ;
 
   // Record info about lock acquisition for debugging.
   lk->cpu = cpu;
+  lk->proc = proc;
   getcallerpcs(&lk, lk->pcs);
 }
 
@@ -47,7 +48,7 @@ release_t(struct ticketlock *lk)
     panic("release");
 
   lk->pcs[0] = 0;
-  lk->holder = 0;
+  lk->proc = 0;
   lk->cpu = 0;
 
   lk->turn++; //fetch_and_add(&lk->turn, 1);
@@ -61,5 +62,5 @@ release_t(struct ticketlock *lk)
 int
 holding_t(struct ticketlock *lock)
 {
-  return (lock->ticket != lock->turn) && (lock->cpu == cpu);
+  return (lock->ticket != lock->turn) && (lock->proc == proc);
 }

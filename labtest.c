@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
           }
         }
         if (pid > 0) {
-          printf(1, "[%d] was used to create ten processes of ascending priority.\n", (int) getpid());
+          printf(1, "[%d] was used to create processes of ascending priority.\n", (int) getpid());
           printf(1, "[%d] waiting for all children to exit.\n", (int) getpid());
           for (i = 0; i < 33554432; i++)
             cnt = (i % 2) ? cnt + i : cnt - i;
@@ -174,7 +174,7 @@ int main(int argc, char *argv[]) {
           }
         }
         if (pid > 0) {
-          printf(1, "[%d] was used to create ten processes of descending priority.\n", (int) getpid());
+          printf(1, "[%d] was used to create processes of descending priority.\n", (int) getpid());
           printf(1, "[%d] waiting for all children to exit.\n", (int) getpid());
           for (i = 0; i < 33554432; i++)
             cnt = (i % 2) ? cnt + i : cnt - i;
@@ -212,10 +212,10 @@ int main(int argc, char *argv[]) {
           cnt = (i % 2) ? cnt + i : cnt - i;
         printf(1, "[%d] acquiring lock at priority %d\n", getpid(), 
             getpriority());
-        printf(1, "  num = %d\n", get_num());
+        update_num(134217727);
         exit(0);
       } else if (cpid > 0) {
-        for (i = 0; i < 1048575; i++)
+        for (i = 0; i < 2097151; i++)
           cnt = (i % 2) ? cnt + i : cnt - i;
         printf(1, "[%d] acquiring lock at priority %d\n", getpid(), 
             getpriority());

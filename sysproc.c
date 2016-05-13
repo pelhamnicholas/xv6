@@ -171,3 +171,23 @@ sys_get_num(void)
 {
   return get_num();
 }
+
+// thread library
+int
+sys_clone(void)
+{
+  void * ptr;
+  int i;
+  argptr(0, (char **) &ptr, sizeof(void*));
+  argint(1, &i);
+  return clone(ptr, i);
+}
+
+int
+sys_thread_exit(void)
+{
+  int status;
+  argint(0, &status);
+  exit(status);
+  return 0;  // not reached
+}

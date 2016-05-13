@@ -28,6 +28,9 @@
 #define SYS_schedinfoinit 27
 #define SYS_schedinfo     28
 
-#define SYS_test_init 29
-#define SYS_update_num 30
-#define SYS_get_num 31
+#define SYS_clone       29
+#define SYS_thread_exit 30
+
+#define SYS_test_init 31
+#define SYS_update_num 32
+#define SYS_get_num 33

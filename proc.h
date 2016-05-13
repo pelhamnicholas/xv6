@@ -69,6 +69,7 @@ struct proc {
   int exitstatus;              // Proces exit status
   int priority;                // Process priority 0-63
   int basepriority;            // used for priority donating
+  int isthread;
   uint starttime;              // Used to test priority
   uint endtime;                //
   uint turnaroundtime;

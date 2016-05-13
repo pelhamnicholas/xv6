@@ -30,6 +30,8 @@ int getpriority(void);
 int count(void);
 void schedinfoinit(void);
 void schedinfo(void);
+int clone(void *, int);
+void thread_exit(int);
 //
 void test_init(void);
 int update_num(int);
@@ -48,3 +50,6 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+
+// thread.c
+int thread_create(void(*)(void*), void *);

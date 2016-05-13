@@ -105,6 +105,7 @@ int             pipewrite(struct pipe*, char*, int);
 
 //PAGEBREAK: 16
 // proc.c
+int             clone(void*, int);
 struct proc*    copyproc(struct proc*);
 void            exit(int);
 int             fork(void);
@@ -121,6 +122,7 @@ void            sched(void);
 void            sleep(void*, struct spinlock*);
 void            sleep_t(void*, struct ticketlock*);
 void            sleep_wlock(void*);
+void            thread_exit(int);
 void            userinit(void);
 int             wait(int*);
 int             waitpid(int, int*, int);
@@ -164,6 +166,9 @@ void            syscall(void);
 void			test_init(void);
 int				update_num(int);
 int				get_num(void);
+
+// thread.c
+//int             thread_create(void *(*)(void*), void *);
 
 // ticketlock.c
 void            acquire_t(struct ticketlock*);

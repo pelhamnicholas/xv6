@@ -107,6 +107,10 @@ extern int sys_count(void);
 extern int sys_exitinfo(void);
 extern int sys_schedinfoinit(void);
 extern int sys_schedinfo(void);
+
+extern int sys_clone(void);
+extern int sys_thread_exit(void);
+
 extern int sys_test_init(void);
 extern int sys_update_num(void);
 extern int sys_get_num(void);
@@ -141,8 +145,10 @@ static int (*syscalls[])(void) = {
 [SYS_schedinfoinit] sys_schedinfoinit,
 [SYS_schedinfo]     sys_schedinfo,
 [SYS_test_init]     sys_test_init,
-[SYS_update_num]     sys_update_num,
-[SYS_get_num]     sys_get_num,
+[SYS_clone]         sys_clone,
+[SYS_thread_exit]   sys_thread_exit,
+[SYS_update_num]    sys_update_num,
+[SYS_get_num]       sys_get_num,
 };
 
 void

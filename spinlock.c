@@ -29,10 +29,6 @@ acquire(struct spinlock *lk)
   if(holding(lk))
     panic("acquire");
 
-  // Priority inheritence
-  //if(proc && proc->pid > 2)
-    //givepriority(lk->proc);
-
   // The xchg is atomic.
   // It also serializes, so that reads after acquire are not
   // reordered before it. 
@@ -51,9 +47,6 @@ release(struct spinlock *lk)
 {
   if(!holding(lk))
     panic("release");
-
-  //if(proc && proc->pid > 2)
-    //resetpriority();
 
   lk->pcs[0] = 0;
   lk->cpu = 0;

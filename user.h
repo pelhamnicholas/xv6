@@ -1,5 +1,6 @@
 struct stat;
 struct rtcdate;
+//struct semaphore;
 
 // system calls
 int fork(void);
@@ -32,6 +33,10 @@ void schedinfoinit(void);
 void schedinfo(void);
 int clone(void *);
 void thread_exit(int);
+void sem_init(semaphore *, unsigned int);
+void sem_wait(semaphore *);
+void sem_signal(semaphore *);
+void sem_broadcast(semaphore *);
 //
 void test_init(void);
 int update_num(int);
@@ -53,3 +58,8 @@ int atoi(const char*);
 
 // thread.c
 int thread_create(void(*)(void*), void *);
+
+// semaphore.c
+//void sem_init(semaphore *, uint);
+//void sem_wait(semaphore *);
+//void sem_signal(semaphore *);

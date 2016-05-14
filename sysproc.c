@@ -172,6 +172,42 @@ sys_get_num(void)
   return get_num();
 }
 
+// semaphores
+
+int
+sys_sem_init(void) {
+  struct semaphore * sem;
+  uint i;
+  argptr(0, (char**) &sem, sizeof(semaphore*));
+  argint(1, (int*) &i);
+  sem_init(sem, i);
+  return 0;
+}
+
+int
+sys_sem_wait(void) {
+  semaphore * sem;
+  argptr(0, (char**) &sem, sizeof(semaphore*));
+  sem_wait(sem);
+  return 0;
+}
+
+int
+sys_sem_signal(void) {
+  semaphore * sem;
+  argptr(0, (char**) &sem, sizeof(semaphore*));
+  sem_signal(sem);
+  return 0;
+}
+
+int
+sys_sem_broadcast(void) {
+  semaphore * sem;
+  argptr(0, (char**) &sem, sizeof(semaphore*));
+  sem_broadcast(sem);
+  return 0;
+}
+
 // thread library
 int
 sys_clone(void)
@@ -186,6 +222,6 @@ sys_thread_exit(void)
 {
   int status;
   argint(0, &status);
-  exit(status);
+  thread_exit(status);
   return 0;  // not reached
 }

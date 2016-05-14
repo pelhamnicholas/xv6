@@ -20,10 +20,12 @@
 #define SYS_link        19
 #define SYS_mkdir       20
 #define SYS_close       21
+
 #define SYS_waitpid     22
 #define SYS_setpriority 23
 #define SYS_getpriority 24
 #define SYS_count       25
+
 #define SYS_exitinfo    26
 #define SYS_schedinfoinit 27
 #define SYS_schedinfo     28
@@ -31,6 +33,11 @@
 #define SYS_clone       29
 #define SYS_thread_exit 30
 
-#define SYS_test_init 31
-#define SYS_update_num 32
-#define SYS_get_num 33
+#define SYS_sem_init    31
+#define SYS_sem_wait    32
+#define SYS_sem_signal  33
+#define SYS_sem_broadcast 34
+
+#define SYS_test_init 35
+#define SYS_update_num 36
+#define SYS_get_num 37

@@ -133,6 +133,13 @@ void            schedinfoinit(void);
 void            schedinfo(void);
 void            exitinfo(int);
 
+// semaphore.c
+
+void sem_init(semaphore *, uint);
+void sem_wait(semaphore *);
+void sem_signal(semaphore *);
+void sem_broadcast(semaphore *);
+
 // swtch.S
 void            swtch(struct context**, struct context*);
 

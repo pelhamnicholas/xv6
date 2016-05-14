@@ -800,8 +800,8 @@ sleep(void *chan, struct spinlock *lk)
     panic("sleep");
 
   // Why would this cause panic?
-  //if(lk == 0)
-  //  panic("sleep without lk");
+  if(lk == 0)
+    panic("sleep without lk");
 
   // Must acquire ptable.lock in order to
   // change p->state and then call sched.
@@ -851,10 +851,10 @@ wakeup_more(void *chan)
   int wokeup = 0;
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-	if(p->state == SLEEPING && p->chan == chan) {
-	  p->state = RUNNABLE;
-	  wokeup++;
-	}
+    if(p->state == SLEEPING && p->chan == chan) {
+      p->state = RUNNABLE;
+      wokeup++;
+	  }
   }
 
   return wokeup;

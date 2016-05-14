@@ -15,6 +15,7 @@ OBJS = \
 	picirq.o\
 	pipe.o\
 	proc.o\
+  semaphore.o\
 	spinlock.o\
 	string.o\
 	swtch.o\
@@ -179,6 +180,7 @@ UPROGS=\
   _null\
 	_count\
 	_labtest\
+  _lab2test\
 	_wait_one\
 	_wait_more\
 	_prio_test\
@@ -253,7 +255,7 @@ EXTRA=\
 	mkfs.c ulib.c user.h cat.c echo.c forktest.c grep.c kill.c\
 	ln.c ls.c mkdir.c rm.c stressfs.c wc.c zombie.c\
 	null.c count.c labtest.c wait_one.o wait_more.o prio_test.o Prio_test2.o\
-  test.c test1.c test2.c\
+  test.c test1.c test2.c lab2test.c\
 	printf.c umalloc.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\

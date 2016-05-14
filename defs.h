@@ -105,7 +105,7 @@ int             pipewrite(struct pipe*, char*, int);
 
 //PAGEBREAK: 16
 // proc.c
-int             clone(void*, int);
+int             clone(void*);
 struct proc*    copyproc(struct proc*);
 void            exit(int);
 int             fork(void);

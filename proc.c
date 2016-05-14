@@ -273,7 +273,9 @@ fork(void)
 }
 
 // Used for creating new threads
-int clone(void * stack, int size) {
+// Copies parent stack
+// Assumes an allocated, page-aligned stack
+int clone(void * stack) {
   int i, pid;
   struct proc *np, *pp;
   uint stacksize;
@@ -312,44 +314,22 @@ int clone(void * stack, int size) {
   for(i = 0; i < NOFILE; i++)
     if(proc->ofile[i])
       np->ofile[i] = filedup(proc->ofile[i]);
-      //np->ofile[i] = proc->ofile[i]; // Would this work?
   np->cwd = idup(proc->cwd);
 
   safestrcpy(np->name, proc->name, sizeof(proc->name));
 
   // Copy stack
-  acquire(&ptable.lock);
+  acquire(&ptable.lock); // lock required because of stack read
   stacksize = (uint)proc->tf->esp + (PGSIZE - ((uint)proc->tf->esp % PGSIZE));
   stacksize = stacksize - (uint)proc->tf->esp;
   np->tf->esp = (uint)stack + PGSIZE - stacksize;
   np->tf->ebp = np->tf->esp + (proc->tf->ebp - proc->tf->esp);
-  //cprintf("proc->sz: %d\n", (uint)proc->sz);
-  //cprintf("proc->tf->esp: %x\n", proc->tf->esp);
-  //cprintf("np->tf->esp: %x\n", np->tf->esp);
-  //cprintf("PGSIZE: %d\n", PGSIZE);
-  //cprintf("stacksize: %d\n", stacksize);
   if(copyout(np->pgdir,np->tf->esp,(void*)proc->tf->esp,stacksize)<0){
     cprintf("stack copy fail\n");
     return -1;
   }
   //release(&ptable.lock);
 
-  /*
-  cprintf("Stack:\n esp = %x\n ebp = %x\n eip = %x\n", 
-      proc->tf->esp, proc->tf->ebp, proc->tf->eip);
-  cprintf(" *esp = %x\n *ebp = %x\n *eip = %x\n", 
-      *(int*)proc->tf->esp, *(int*)proc->tf->ebp, *(int*)proc->tf->eip);
-  //for (i = proc->tf->esp; i < proc->tf->ebp; i++)
-    //cprintf(" *esp: %x = %x\n", i, *(int*)i);
-  cprintf("Stack copy:\n esp = %x\n ebp = %x\n eip = %x\n", 
-      np->tf->esp, np->tf->ebp, np->tf->eip);
-  cprintf(" *esp = %x\n *ebp = %x\n *eip = %x\n", 
-      *(int*)np->tf->esp, *(int*)np->tf->ebp, *(int*)np->tf->eip);
-  //for (i = np->tf->esp; i < np->tf->ebp; i++)
-    //cprintf(" *esp: %x = %x\n", i, *(int*)i);
-  //exit(0);
-  */
- 
   pid = np->pid;
 
   // lock to force the compiler to emit the np->state write last.
@@ -470,14 +450,7 @@ thread_exit(int status)
 
     while(wakeup_more(proc))
       ;
-    // Pass abandoned children to init.
-    //  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-    //    if(p->parent == proc){
-    //      p->parent = initproc;
-    //      if(p->state == ZOMBIE)
-    //        wakeup1(initproc);
-    //    }
-    //  }
+
     // Jump into the scheduler, never to return.
     proc->state = ZOMBIE;
     sched();
@@ -640,7 +613,8 @@ waitpid(int pid, int *status, int option)
       if(p->state == ZOMBIE) {
         kfree(p->kstack);
         p->kstack = 0;
-        freevm(p->pgdir);
+        if (!p->isthread)
+          freevm(p->pgdir);
         p->state = UNUSED;
         p->pid = 0;
         p->parent = 0;

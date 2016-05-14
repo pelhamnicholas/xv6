@@ -21,7 +21,7 @@ int thread_create(void(*start_routine)(void *), void *arg) {
   else
     stack = mem;
 
-  if ((pid = clone((void *)stack, PGSIZE)) != 0)
+  if ((pid = clone((void *)stack)) != 0)
     return pid;
 
   if (pid == 0) {
@@ -33,7 +33,7 @@ int thread_create(void(*start_routine)(void *), void *arg) {
   return pid;
 }
 
-int thread_yield(void * stack) {
+int thread_yield() {
   return 0;
 }
 

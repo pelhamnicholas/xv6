@@ -30,7 +30,7 @@ int getpriority(void);
 int count(void);
 void schedinfoinit(void);
 void schedinfo(void);
-int clone(void *, int);
+int clone(void *);
 void thread_exit(int);
 //
 void test_init(void);

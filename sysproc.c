@@ -177,10 +177,8 @@ int
 sys_clone(void)
 {
   void * ptr;
-  int i;
   argptr(0, (char **) &ptr, sizeof(void*));
-  argint(1, &i);
-  return clone(ptr, i);
+  return clone(ptr);
 }
 
 int

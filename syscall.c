@@ -110,6 +110,7 @@ extern int sys_schedinfo(void);
 
 extern int sys_clone(void);
 extern int sys_thread_exit(void);
+extern int sys_thread_yield(void);
 
 extern int sys_sem_init(void);
 extern int sys_sem_wait(void);
@@ -152,6 +153,7 @@ static int (*syscalls[])(void) = {
 [SYS_test_init]     sys_test_init,
 [SYS_clone]         sys_clone,
 [SYS_thread_exit]   sys_thread_exit,
+[SYS_thread_yield]  sys_thread_yield,
 [SYS_sem_init]      sys_sem_init,
 [SYS_sem_wait]      sys_sem_wait,
 [SYS_sem_signal]    sys_sem_signal,

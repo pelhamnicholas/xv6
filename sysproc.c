@@ -225,3 +225,10 @@ sys_thread_exit(void)
   thread_exit(status);
   return 0;  // not reached
 }
+
+int
+sys_thread_yield(void)
+{
+  thread_yield();
+  return 0;
+}

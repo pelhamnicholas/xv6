@@ -123,6 +123,7 @@ void            sleep(void*, struct spinlock*);
 void            sleep_t(void*, struct ticketlock*);
 void            sleep_wlock(void*);
 void            thread_exit(int);
+void            thread_yield(void);
 void            userinit(void);
 int             wait(int*);
 int             waitpid(int, int*, int);

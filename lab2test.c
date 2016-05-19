@@ -9,6 +9,7 @@
 #include "memlayout.h"
 #include "semaphore.h"
 
+// Problem 1
 semaphore H, hRdy, O;
 
 void hReady(void * arg) {
@@ -30,6 +31,7 @@ void oReady(void * w) {
 int main(int argc, char * argv[]) {
   int i, water;
 
+  // Problem 1
   water = 0;
   printf(1, "Water begin: %d\n", water);
 

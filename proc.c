@@ -734,6 +734,34 @@ yield(void)
   release(&ptable.lock);
 }
 
+void
+thread_yield(void)
+{
+  yield();
+  /*
+  struct proc *p, *_p;
+
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->isthread != 1)
+      continue;
+    if(p->state != RUNNABLE)
+      continue;
+    if(p->parent != proc->parent)
+      continue;
+    proc->state = RUNNABLE;
+    _p = proc;
+    _p->state = RUNNING;
+    swtch(&_p->context, p->context);
+    break;
+  }
+
+  proc->state = RUNNABLE;
+  sched();
+  release(&ptable.lock);
+  */
+}
+
 // A fork child's very first scheduling by scheduler()
 // will swtch here.  "Return" to user space.
 void

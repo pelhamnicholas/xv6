@@ -33,6 +33,7 @@ void schedinfoinit(void);
 void schedinfo(void);
 int clone(void *);
 void thread_exit(int);
+void thread_yield(void);
 void sem_init(semaphore *, unsigned int);
 void sem_wait(semaphore *);
 void sem_signal(semaphore *);

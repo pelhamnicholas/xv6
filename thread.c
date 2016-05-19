@@ -1,14 +1,9 @@
 #include "types.h"
-//#include "defs.h"
-//#include "stat.h"
 #include "user.h"
 #include "param.h"
-//#include "memlayout.h"
 #include "mmu.h"
 #include "x86.h"
 #include "proc.h"
-//#include "spinlock.h"
-
 
 int thread_create(void(*start_routine)(void *), void *arg) {
   void * stack, * mem;
@@ -24,19 +19,14 @@ int thread_create(void(*start_routine)(void *), void *arg) {
   if ((pid = clone((void *)stack)) != 0)
     return pid;
 
-  if (pid == 0) {
-    start_routine(arg);
-    free(mem);
-    thread_exit(0);
-  }
+  start_routine(arg);
+  free(mem);
+  thread_exit(0);
 
   return pid;
 }
 
-int thread_yield() {
-  return 0;
-}
-
+// does what waitpid does for now
 int thread_join(int tid, int *status) {
-  return 0;
+  return waitpid(tid, status, 0);
 }

@@ -32,12 +32,13 @@
 
 #define SYS_clone       29
 #define SYS_thread_exit 30
+#define SYS_thread_yield 31
 
-#define SYS_sem_init    31
-#define SYS_sem_wait    32
-#define SYS_sem_signal  33
-#define SYS_sem_broadcast 34
+#define SYS_sem_init    32
+#define SYS_sem_wait    33
+#define SYS_sem_signal  34
+#define SYS_sem_broadcast 35
 
-#define SYS_test_init 35
-#define SYS_update_num 36
+#define SYS_test_init 36
+#define SYS_update_num 37
 #define SYS_get_num 37

@@ -175,6 +175,7 @@ UPROGS=\
   _test\
   _test1\
   _test2\
+  _thread_yield_test\
 	_wc\
 	_zombie\
   _null\
@@ -255,7 +256,7 @@ EXTRA=\
 	mkfs.c ulib.c user.h cat.c echo.c forktest.c grep.c kill.c\
 	ln.c ls.c mkdir.c rm.c stressfs.c wc.c zombie.c\
 	null.c count.c labtest.c wait_one.o wait_more.o prio_test.o Prio_test2.o\
-  test.c test1.c test2.c lab2test.c\
+  test.c test1.c test2.c lab2test.c thread_yield_test.c\
 	printf.c umalloc.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\

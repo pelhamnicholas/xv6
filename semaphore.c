@@ -19,10 +19,13 @@ void sem_init(struct semaphore * s, uint i) {
 
 void sem_wait(struct semaphore * s) {
   acquire(&s->lock);
-  s->thread[s->end] = proc;
-  s->end = (s->end + 1) % NPROC;
-  while (s->val == 0)
+  //s->thread[s->end] = proc;
+  //s->end = (s->end + 1) % NPROC;
+  while (s->val == 0) {
+    s->thread[s->end] = proc;
+    s->end = (s->end + 1) % NPROC;
     sleep(proc, &s->lock);
+  }
   s->val = s->val - 1;
   //cprintf("%s sem_wait: val = %d\n", s->name, s->val);
   release(&s->lock);
@@ -32,8 +35,11 @@ void sem_signal(struct semaphore * s) {
   acquire(&s->lock);
   s->val = s->val + 1;
   //cprintf("%s sem_signal: val = %d\n", s->name, s->val);
-  s->next = (s->next + 1) % NPROC;
-  wakeup(s->thread[s->next]);
+  if (s->thread[s->next]) {
+    wakeup(s->thread[s->next]);
+    s->thread[s->next] = 0;
+    s->next = (s->next + 1) % NPROC;
+  }
   release(&s->lock);
 }
 

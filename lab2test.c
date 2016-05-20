@@ -14,7 +14,7 @@ semaphore H, hRdy, O;
 
 void hReady(void * arg) {
   sem_wait(&H);
-  sem_broadcast(&hRdy);
+  sem_signal(&hRdy);
 }
 
 void oReady(void * w) {
@@ -23,9 +23,9 @@ void oReady(void * w) {
   sem_wait(&hRdy);
   sem_wait(&hRdy);
   (*water)++;
-  sem_broadcast(&O);
-  sem_broadcast(&H);
-  sem_broadcast(&H);
+  sem_signal(&O);
+  sem_signal(&H);
+  sem_signal(&H);
 }
 
 int main(int argc, char * argv[]) {

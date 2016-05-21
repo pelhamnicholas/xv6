@@ -7,7 +7,7 @@
 
 int thread_create(void(*start_routine)(void *), void *arg) {
   void * stack, * mem;
-  int pid;
+  int tid;
 
   // Set up new threads stack
   mem = malloc(2*PGSIZE);
@@ -16,17 +16,21 @@ int thread_create(void(*start_routine)(void *), void *arg) {
   else
     stack = mem;
 
-  if ((pid = clone((void *)stack)) != 0)
-    return pid;
+  if ((tid = clone((void *)stack)) != 0)
+    return tid;
 
   start_routine(arg);
   free(mem);
-  thread_exit(0);
+  exit(0);
 
-  return pid;
+  return tid;
 }
 
 // does what waitpid does for now
 int thread_join(int tid, int *status) {
   return waitpid(tid, status, 0);
+}
+
+int thread_yield(int tid) {
+  return yield(tid);
 }

@@ -13,7 +13,7 @@ void func(void *arg) {
   while (1) {
     printf(1, "%s\n", (char*) arg);
     sleep(10);
-    thread_yield();
+    thread_yield(0);
   }
 }
 

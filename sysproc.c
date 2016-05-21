@@ -172,42 +172,6 @@ sys_get_num(void)
   return get_num();
 }
 
-// semaphores
-
-int
-sys_sem_init(void) {
-  struct semaphore * sem;
-  uint i;
-  argptr(0, (char**) &sem, sizeof(semaphore*));
-  argint(1, (int*) &i);
-  sem_init(sem, i);
-  return 0;
-}
-
-int
-sys_sem_wait(void) {
-  semaphore * sem;
-  argptr(0, (char**) &sem, sizeof(semaphore*));
-  sem_wait(sem);
-  return 0;
-}
-
-int
-sys_sem_signal(void) {
-  semaphore * sem;
-  argptr(0, (char**) &sem, sizeof(semaphore*));
-  sem_signal(sem);
-  return 0;
-}
-
-int
-sys_sem_broadcast(void) {
-  semaphore * sem;
-  argptr(0, (char**) &sem, sizeof(semaphore*));
-  sem_broadcast(sem);
-  return 0;
-}
-
 // thread library
 int
 sys_clone(void)
@@ -218,17 +182,48 @@ sys_clone(void)
 }
 
 int
-sys_thread_exit(void)
+sys_yield(void)
 {
-  int status;
-  argint(0, &status);
-  thread_exit(status);
-  return 0;  // not reached
+  int i;
+  argint(0, &i);
+  return yield(i);
+}
+
+// semaphores
+int
+sys_sem_init(void)
+{
+  semaphore * sem;
+  int i;
+  argptr(0, (char **) &sem, sizeof(semaphore*));
+  argint(1, &i);
+  sem_init(sem, i);
+  return 0;
 }
 
 int
-sys_thread_yield(void)
+sys_sem_wait(void)
 {
-  thread_yield();
+  semaphore * sem;
+  argptr(0, (char **) &sem, sizeof(semaphore*));
+  sem_wait(sem);
+  return 0;
+}
+
+int
+sys_sem_signal(void)
+{
+  semaphore * sem;
+  argptr(0, (char **) &sem, sizeof(semaphore*));
+  sem_signal(sem);
+  return 0;
+}
+
+int
+sys_sem_broadcast(void)
+{
+  semaphore * sem;
+  argptr(0, (char **) &sem, sizeof(semaphore*));
+  sem_broadcast(sem);
   return 0;
 }

@@ -31,13 +31,14 @@ int getpriority(void);
 int count(void);
 void schedinfoinit(void);
 void schedinfo(void);
-int clone(void *);
-void thread_exit(int);
-void thread_yield(void);
-void sem_init(semaphore *, unsigned int);
-void sem_wait(semaphore *);
-void sem_signal(semaphore *);
-void sem_broadcast(semaphore *);
+//
+int clone(void*);
+int yield(int);
+//
+void sem_init(semaphore*, uint);
+void sem_wait(semaphore*);
+void sem_signal(semaphore*);
+void sem_broadcast(semaphore*);
 //
 void test_init(void);
 int update_num(int);
@@ -59,8 +60,7 @@ int atoi(const char*);
 
 // thread.c
 int thread_create(void(*)(void*), void *);
+int thread_yield(int);
+int thread_join(int, int*);
 
 // semaphore.c
-//void sem_init(semaphore *, uint);
-//void sem_wait(semaphore *);
-//void sem_signal(semaphore *);

@@ -423,41 +423,6 @@ exit(int status)
 }
 
 void
-thread_exit(int status)
-{
-    //  struct proc *p;
-    int fd;
-
-    proc->exitstatus = status;
-
-    if(proc == initproc)
-        panic("init exiting");
-
-    // Close all open files.
-    // Won't need this later
-    for(fd = 0; fd < NOFILE; fd++){
-        if(proc->ofile[fd]){
-            fileclose(proc->ofile[fd]);
-            proc->ofile[fd] = 0;
-        }
-    }
-    iput(proc->cwd);
-    proc->cwd = 0;
-
-    acquire(&ptable.lock);
-    // Parent might be sleeping in wait().
-    wakeup1(proc->parent);
-
-    while(wakeup_more(proc))
-      ;
-
-    // Jump into the scheduler, never to return.
-    proc->state = ZOMBIE;
-    sched();
-    panic("zombie exit");
-}
-
-void
 exitinfo(int status)
 {
   struct proc *p;
@@ -649,6 +614,7 @@ scheduler(void)
   struct proc *p;
   //struct proc *np, *lp;
   int priority;
+  //int sharedstack;
 
   for(;;){
     // Enable interrupts on this processor.
@@ -667,6 +633,8 @@ scheduler(void)
         priority = p->priority;
     }
 
+    //sharedstack = 0;
+
     // Round robin all processes of highest priority
     //for ( ; priority >= 0; priority--) {
 
@@ -677,12 +645,18 @@ scheduler(void)
             continue;
           if(p->priority > priority)
             break;
+          //if (proc->isthread || p->isthread) {
+          //  if ((proc->parent == p->parent) ||  (proc->parent == p) 
+          //      || (proc == p->parent))
+          //    sharedstack = 1;
+          //}
 
           // Switch to chosen process.  It is the process's job
           // to release ptable.lock and then reacquire it
           // before jumping back to us.
           proc = p;
-          switchuvm(p);
+          //if (!sharedstack)
+            switchuvm(p);
           p->state = RUNNING;
           temptime = ticks;
           if(p->runtime == 0)
@@ -693,11 +667,64 @@ scheduler(void)
           // Process is done running for now.
           // It should have changed its p->state before coming back.
           proc = 0;
+          //sharedstack = 0;
         }
     //}
     release(&ptable.lock);
 
   }
+}
+
+int
+givecputo(int pid)
+{
+  struct proc *p;
+  int found = 0;
+  //int sharedstack = 0;
+
+  // Enable interrupts on this processor.
+  sti();
+
+  // Loop over process table looking for process to run.
+  acquire(&ptable.lock);
+
+  // Find highest priority level in runnable processes
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if(p->state != RUNNABLE)
+      continue;
+    if (p->pid == pid) {
+      found = 1;
+      break;
+    }
+  }
+  if (found == 0)
+    return 1;
+  //if (proc->isthread || p->isthread) {
+  //  if ((proc->parent == p->parent) ||  (proc->parent == p) 
+  //      || (proc == p->parent))
+  //    sharedstack = 1;
+  //}
+
+  // Switch to chosen process.  It is the process's job
+  // to release ptable.lock and then reacquire it
+  // before jumping back to us.
+  proc = p;
+  //if (!sharedstack)
+    switchuvm(p);
+  p->state = RUNNING;
+  temptime = ticks;
+  if(p->runtime == 0)
+    p->responsetime = temptime - p->starttime;
+  swtch(&cpu->scheduler, proc->context);
+  switchkvm();
+
+  // Process is done running for now.
+  // It should have changed its p->state before coming back.
+  proc = 0;
+
+  release(&ptable.lock);
+
+  return 0;
 }
 
 // Enter scheduler.  Must hold only ptable.lock
@@ -725,41 +752,20 @@ sched(void)
 }
 
 // Give up the CPU for one scheduling round.
-void
-yield(void)
+int
+yield(int pid)
 {
-  acquire(&ptable.lock);  //DOC: yieldlock
-  proc->state = RUNNABLE;
-  sched();
-  release(&ptable.lock);
-}
-
-void
-thread_yield(void)
-{
-  yield();
-  /*
-  struct proc *p, *_p;
-
-  acquire(&ptable.lock);
-  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-    if(p->isthread != 1)
-      continue;
-    if(p->state != RUNNABLE)
-      continue;
-    if(p->parent != proc->parent)
-      continue;
+  if (pid) // pid 0 is init so this should be safe
+    givecputo(pid);
+  //if (!proc->isthread) {
+    acquire(&ptable.lock);  //DOC: yieldlock
     proc->state = RUNNABLE;
-    _p = proc;
-    _p->state = RUNNING;
-    swtch(&_p->context, p->context);
-    break;
-  }
-
-  proc->state = RUNNABLE;
-  sched();
-  release(&ptable.lock);
-  */
+    sched();
+    release(&ptable.lock);
+  //} else {
+    // do thread stuff
+  //}
+  return 0;
 }
 
 // A fork child's very first scheduling by scheduler()

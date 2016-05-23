@@ -75,6 +75,7 @@ struct proc {
   uint turnaroundtime;
   uint runtime;                //
   uint responsetime;           //
+  uint stack_top;
 };
 
 // Additional temp variable for time

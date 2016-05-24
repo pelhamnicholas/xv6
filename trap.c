@@ -36,6 +36,8 @@ idtinit(void)
 void
 trap(struct trapframe *tf)
 {
+  //pde_t *pde;
+
   if(tf->trapno == T_SYSCALL){
     if(proc->killed)
       exit(0);
@@ -77,11 +79,25 @@ trap(struct trapframe *tf)
             cpu->id, tf->cs, tf->eip);
     lapiceoi();
     break;
-  //case T_PGFLT:
-  //  cprintf("cpu%d: page fault pid %d at eip %x KERNBASE: %x\n",
-  //          cpu->id, proc->pid, tf->eip, KERNBASE);
-  //  proc->killed = 1;
-  //  break;
+  case T_PGFLT:
+    if (proc->tf->esp <= (proc->stack_top + PGSIZE)) {
+      proc->stack_top -= PGSIZE;
+      // don't allocate new memory if already present
+      //pde = &proc->pgdir[PDX(proc->stack_top)];
+      //if(*pde & PTE_P)
+        //goto segfault;
+      if(allocuvm(proc->pgdir, proc->stack_top, proc->stack_top + PGSIZE) == 0)
+        goto segfault;
+      clearpteu(proc->pgdir, (char *)proc->stack_top);
+      setpteu(proc->pgdir, (char *)(proc->stack_top + PGSIZE));
+      break;
+    }
+
+    segfault:
+    cprintf("pid %d %s: page fault on %d eip 0x%x esp 0x%x sz 0x%x addr 0x%x\n",
+            proc->pid, proc->name, cpu->id, tf->eip, tf->esp, proc->sz, rcr2());
+    proc->killed = 1;
+    break;
    
   //PAGEBREAK: 13
   default:

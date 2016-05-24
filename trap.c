@@ -94,8 +94,9 @@ trap(struct trapframe *tf)
     }
 
     segfault:
-    cprintf("pid %d %s: page fault on %d eip 0x%x esp 0x%x sz 0x%x addr 0x%x\n",
-            proc->pid, proc->name, cpu->id, tf->eip, tf->esp, proc->sz, rcr2());
+    cprintf("pid %d %s: page fault on %d eip 0x%x stack 0x%x sz 0x%x addr 0x%x\n",
+            proc->pid, proc->name, cpu->id, tf->eip, proc->stack_top, 
+						proc->sz, rcr2());
     proc->killed = 1;
     break;
    

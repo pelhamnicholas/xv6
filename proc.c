@@ -757,8 +757,8 @@ sched(void)
 int
 yield(int pid)
 {
-  if (pid) // pid 0 is init so this should be safe
-    givecputo(pid);
+  //if (pid) // pid 0 is init so this should be safe
+    //givecputo(pid);
   //if (!proc->isthread) {
     acquire(&ptable.lock);  //DOC: yieldlock
     proc->state = RUNNABLE;

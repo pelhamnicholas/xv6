@@ -12,11 +12,11 @@
 int get_option(int, char **);
 int show_help(void);
 int water(void);
-//int monkeys(void);
+int monkeys(void);
 int boat(void);
-//int null(void);
+int null_test(void);
 //int stack(void);
-//int grow_stack(void);
+int grow_stack(void);
 
 int main(int argc, char * argv[]) {
   unsigned char option = 0;
@@ -27,11 +27,11 @@ int main(int argc, char * argv[]) {
   printf(1, "\nStarting...\n", option);
 
   if (option & 0x01) water();
-  //if (option & 0x02) monkeys();
+  if (option & 0x02) monkeys();
   if (option & 0x04) boat();
-  //if (option & 0x08) null();
+  if (option & 0x08) null_test();
   //if (option & 0x10) stack();
-  //if (option & 0x20) grow_stack();
+  if (option & 0x20) grow_stack();
 
   printf(1, "\nTesting Complete\n");
   
@@ -111,6 +111,80 @@ int water(void) {
 }
 
 // Problem 2
+semaphore mutex1, mutex2, mutex3, mutex4, tree, climb,
+          one_monkey, /*monkey,*/ tree;
+int movingup, movingdown, dominant;
+
+void monkey(void) {
+  sem_wait(&one_monkey);
+  while (dominant > 0)
+    thread_yield(0);
+  //sem_wait(&monkey);
+  sem_wait(&tree);
+  sem_wait(&mutex1);
+  movingup++;
+  if (movingup == 1)
+    sem_wait(&climb);
+  sem_signal(&mutex1);
+  //sem_signal(&monkey);
+  sem_signal(&one_monkey);
+  // climb up
+  sem_wait(&mutex1);
+  movingup--;
+  if (movingup == 0)
+    sem_signal(&climb);
+  sem_signal(&mutex1);
+  // get coconut
+  sem_wait(&mutex2);
+  movingdown++;
+  if (movingdown == 1)
+    sem_wait(&climb);
+  sem_signal(&mutex2);
+  // climb down
+  sem_wait(&mutex2);
+  movingdown--;
+  if (movingdown == 0)
+    sem_signal(&climb);
+  sem_signal(&mutex2);
+  sem_signal(&tree);
+}
+
+void dominant_monkey(void) {
+  sem_wait(&mutex3);
+  dominant++;
+  //if (dominant == 1)
+    //sem_wait(&monkey);
+  dominant--;
+  //if (dominant == 0)
+    //sem_signal(&monkey);
+  sem_signal(&mutex3);
+  sem_wait(&tree);
+  sem_wait(&mutex1);
+  movingup++;
+  if (movingup == 1)
+    sem_signal(&climb);
+  sem_signal(&mutex1);
+  // climb up
+  sem_wait(&mutex1);
+  movingup--;
+  if (movingup == 0)
+    sem_signal(&climb);
+  sem_signal(&mutex1);
+  // get coconut
+  sem_wait(&mutex2);
+  movingdown++;
+  if (movingdown == 1)
+    sem_wait(&climb);
+  sem_signal(&mutex2);
+  // climb down
+  sem_wait(&mutex2);
+  movingdown--;
+  if (movingdown == 0)
+    sem_signal(&climb);
+  sem_signal(&mutex2);
+  sem_signal(&tree);
+}
+
 int monkeys(void) {
   return 0;
 }
@@ -188,6 +262,46 @@ int boat(void) {
   return 0;
 }
 
-//int null(void);
+// Null
+
+void null(void* v) {
+  int *p;
+  p = (void *) 0x0;
+  printf(1, "%d: p = %x\n", getpid(), *p);
+  printf(1, "Null test failed\n");
+}
+
+int null_test(void) {
+  int pid;
+  //thread_create(null, (void*) 0);
+
+  pid = fork();
+  if (pid == 0)
+    exec("null", 0);
+  else if (pid < 0) {
+    printf(1, "fail\n");
+    exit(1);
+  }
+
+  wait(0);
+  printf(1, "Null test complete\n");
+  return 0;
+}
+
 //int stack(void);
-//int grow_stack(void);
+
+int grow_stack(void) {
+  int pid;
+
+  pid = fork();
+  if (pid == 0)
+    exec("stacktest", 0);
+  else if (pid < 0) {
+    printf(1, "fail\n");
+    exit(1);
+  }
+
+  wait(0);
+  printf(1, "Stack test complete\n");
+  return 0;
+}

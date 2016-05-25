@@ -58,6 +58,8 @@ void* malloc(uint);
 void free(void*);
 int atoi(const char*);
 
+void printlock_init(void);
+
 // thread.c
 int thread_create(void(*)(void*), void *);
 int thread_yield(int);

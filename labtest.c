@@ -23,6 +23,8 @@ int main(int argc, char *argv[]) {
   if ((option = get_option(argc, argv)) == 0)
     show_help();
 
+  printlock_init();
+
   printf(1, "\nStarting...\n", option);
 
   if (option & 0x10) schedinfoinit();

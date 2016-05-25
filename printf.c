@@ -1,6 +1,31 @@
 #include "types.h"
 #include "stat.h"
 #include "user.h"
+#include "x86.h"
+
+struct spinlock {
+  char name[20];
+  uint ticket;
+  uint turn;
+} lock;
+
+void printlock_init(void) {
+  strcpy(lock.name, "printlock");
+  lock.ticket = 0;
+  lock.turn = 0;
+}
+
+void acquire(struct spinlock * lock) {
+  uint ticket;
+
+  ticket = fetch_and_add(&lock->ticket, 1);
+  while(lock->turn != ticket)
+    ;
+}
+
+void release(struct spinlock * lock) {
+  lock->turn++; //fetch_and_add(&lk->turn, 1);
+}
 
 static void
 putc(int fd, char c)
@@ -43,6 +68,9 @@ printf(int fd, char *fmt, ...)
   int c, i, state;
   uint *ap;
 
+  if (strcmp(lock.name, "printlock") == 0)
+    acquire(&lock);
+
   state = 0;
   ap = (uint*)(void*)&fmt + 1;
   for(i = 0; fmt[i]; i++){
@@ -82,4 +110,8 @@ printf(int fd, char *fmt, ...)
       state = 0;
     }
   }
+
+  if (strcmp(lock.name, "printlock") == 0)
+    release(&lock);
+
 }

@@ -193,9 +193,9 @@ sys_yield(void)
 int
 sys_sem_init(void)
 {
-  semaphore * sem;
+  struct semaphore * sem;
   int i;
-  argptr(0, (char **) &sem, sizeof(semaphore*));
+  argptr(0, (char **) &sem, sizeof(struct semaphore*));
   argint(1, &i);
   sem_init(sem, i);
   return 0;
@@ -204,8 +204,8 @@ sys_sem_init(void)
 int
 sys_sem_wait(void)
 {
-  semaphore * sem;
-  argptr(0, (char **) &sem, sizeof(semaphore*));
+  struct semaphore * sem;
+  argptr(0, (char **) &sem, sizeof(struct semaphore*));
   sem_wait(sem);
   return 0;
 }
@@ -213,8 +213,8 @@ sys_sem_wait(void)
 int
 sys_sem_signal(void)
 {
-  semaphore * sem;
-  argptr(0, (char **) &sem, sizeof(semaphore*));
+  struct semaphore * sem;
+  argptr(0, (char **) &sem, sizeof(struct semaphore*));
   sem_signal(sem);
   return 0;
 }
@@ -222,8 +222,8 @@ sys_sem_signal(void)
 int
 sys_sem_broadcast(void)
 {
-  semaphore * sem;
-  argptr(0, (char **) &sem, sizeof(semaphore*));
+  struct semaphore * sem;
+  argptr(0, (char **) &sem, sizeof(struct semaphore*));
   sem_broadcast(sem);
   return 0;
 }

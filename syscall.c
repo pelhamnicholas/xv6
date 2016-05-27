@@ -19,7 +19,7 @@ extern unsigned long numcalls;
 int
 fetchint(uint addr, int *ip)
 {
-  if(addr >= KERNBASE /*proc->sz*/ || addr+4 >= KERNBASE /*proc->sz*/)
+  if(addr >= USERTOP /*proc->sz*/ || addr+4 >= USERTOP /*proc->sz*/)
     return -1;
   *ip = *(int*)(addr);
   return 0;
@@ -33,10 +33,10 @@ fetchstr(uint addr, char **pp)
 {
   char *s, *ep;
 
-  if(addr >= KERNBASE /*proc->sz*/)
+  if(addr >= USERTOP /*proc->sz*/)
     return -1;
   *pp = (char*)addr;
-  ep = (char*)KERNBASE;//proc->sz;
+  ep = (char*)USERTOP;//proc->sz;
   for(s = *pp; s < ep; s++)
     if(*s == 0)
       return s - *pp;

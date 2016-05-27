@@ -3,4 +3,4 @@ typedef unsigned short ushort;
 typedef unsigned char  uchar;
 typedef uint pde_t;
 
-typedef struct semaphore semaphore;
+struct semaphore;

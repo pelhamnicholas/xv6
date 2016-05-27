@@ -1,5 +1,6 @@
 // Memory layout
 
+#define USERTOP 0xA0000             // End of user memory
 #define EXTMEM  0x100000            // Start of extended memory
 #define PHYSTOP 0xE000000           // Top physical memory
 #define DEVSPACE 0xFE000000         // Other devices are at high addresses

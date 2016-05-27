@@ -134,10 +134,10 @@ void            exitinfo(int);
 
 // semaphore.c
 
-void sem_init(semaphore *, uint);
-void sem_wait(semaphore *);
-void sem_signal(semaphore *);
-void sem_broadcast(semaphore *);
+void sem_init(struct semaphore *, uint);
+void sem_wait(struct semaphore *);
+void sem_signal(struct semaphore *);
+void sem_broadcast(struct semaphore *);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
@@ -203,6 +203,7 @@ void            vmenable(void);
 pde_t*          setupkvm(void);
 char*           uva2ka(pde_t*, char*);
 int             allocuvm(pde_t*, uint, uint);
+int             growstack(pde_t*, uint, uint);
 int             deallocuvm(pde_t*, uint, uint);
 void            freevm(pde_t*);
 void            inituvm(pde_t*, char*, uint);

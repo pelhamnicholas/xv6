@@ -344,7 +344,7 @@ copyuvm(pde_t *pgdir, uint sz, uint stack_top)
   if (stack_top == 0)
     return d;
   // copy stack
-  for(i = stack_top; i < KERNBASE; i += PGSIZE){
+  for(i = stack_top; i < USERTOP; i += PGSIZE){
     if((pte = walkpgdir(pgdir, (void *) i, 1)) == 0)
       panic("copyuvm: pte should exist");
     if(!(*pte & PTE_P))
@@ -362,6 +362,31 @@ copyuvm(pde_t *pgdir, uint sz, uint stack_top)
 
 bad:
   freevm(d);
+  return 0;
+}
+
+int
+growstack(pde_t *pgdir, uint sp, uint stack_top)
+{
+  pte_t *pte;
+  uint new_top = stack_top - PGSIZE;
+
+  if (sp > (stack_top + PGSIZE))
+    return -1;
+
+
+  // don't allocate new memory if already present
+  if((pte = walkpgdir(pgdir, (void *) new_top, 1)) == 0)
+    return -1;
+  if(*pte & PTE_P)
+    return -1;
+
+  if(allocuvm(pgdir, new_top, stack_top) == 0)
+    return -1;
+
+  proc->stack_top -= PGSIZE;
+  setpteu(proc->pgdir, (char *)(proc->stack_top + PGSIZE));
+  clearpteu(proc->pgdir, (char *)proc->stack_top);
   return 0;
 }
 

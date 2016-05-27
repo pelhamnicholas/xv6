@@ -127,15 +127,17 @@ int water(void) {
 
 // Problem 2
 semaphore mutex1, mutex2, mutex3, tree, climb, sem_monkey, one_monkey;
-int movingup, movingdown, dominant, num_monkeys;
+int movingup, movingdown, dominant, num_dominant_monkeys, num_monkeys;
 
 void monkey(void * arg) {
-  printf(1, "Monkey arrives\n");
+  num_monkeys++; // waiting
+  //printf(1, "\nMonkey arrives\n  %d Monkeys waiting\n  %d Dominant Monkeys waiting\n", num_monkeys, num_dominant_monkeys);
 
   sem_wait(&one_monkey);
   sem_wait(&sem_monkey);
 
   sem_wait(&tree);
+  num_monkeys--; // waiting
   sem_wait(&mutex1);
   movingup++;
   if (movingup == 1)
@@ -153,7 +155,7 @@ void monkey(void * arg) {
     sem_signal(&climb);
   sem_signal(&mutex1);
   // get coconut
-  printf(1, "Monkey getting coconut\n");
+  printf(1, "\nMonkey getting coconut\n  %d Monkeys waiting\n  %d Dominant Monkeys waiting\n", num_monkeys, num_dominant_monkeys);
   sem_wait(&mutex2);
   movingdown++;
   if (movingdown == 1)
@@ -170,7 +172,8 @@ void monkey(void * arg) {
 }
 
 void dominant_monkey(void *arg) {
-  printf(1, "Dominant monkey arrives\n");
+  num_dominant_monkeys++; // waiting
+  //printf(1, "\nDominant Monkey arrives\n  %d Monkeys waiting\n  %d Dominant Monkeys waiting\n", num_monkeys, num_dominant_monkeys);
 
   sem_wait(&mutex3);
   dominant++;
@@ -179,6 +182,7 @@ void dominant_monkey(void *arg) {
   sem_signal(&mutex3);
 
   sem_wait(&tree);
+  num_dominant_monkeys--; // waiting
   sem_wait(&mutex1);
   movingup++;
   if (movingup == 1)
@@ -192,7 +196,8 @@ void dominant_monkey(void *arg) {
     sem_signal(&climb);
   sem_signal(&mutex1);
   // get coconut
-  printf(1, "Dominant monkey getting coconut\n");
+  printf(1, "\nDominant Monkey getting coconut\n  %d Monkeys waiting\n  %d Dominant Monkeys waiting\n", num_monkeys, num_dominant_monkeys);
+
   sem_wait(&mutex2);
   movingdown++;
   if (movingdown == 1)
@@ -231,8 +236,9 @@ int monkeys(void) {
 
   seed();
   for (i = 0; i < 37; i++) {
-    if (random(i, 10)) thread_create(monkey, 0);
+    if (random(i, 4)) thread_create(monkey, 0);
     else thread_create(dominant_monkey, 0);
+    thread_yield(0);
   }
 
   while(wait(0) >= 0)

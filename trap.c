@@ -80,23 +80,16 @@ trap(struct trapframe *tf)
     lapiceoi();
     break;
   case T_PGFLT:
-    if (proc->tf->esp <= (proc->stack_top + PGSIZE)) {
-      proc->stack_top -= PGSIZE;
-      // don't allocate new memory if already present
-      //pde = &proc->pgdir[PDX(proc->stack_top)];
-      //if(*pde & PTE_P)
-        //goto segfault;
-      if(allocuvm(proc->pgdir, proc->stack_top, proc->stack_top + PGSIZE) == 0)
-        goto segfault;
-      clearpteu(proc->pgdir, (char *)proc->stack_top);
-      setpteu(proc->pgdir, (char *)(proc->stack_top + PGSIZE));
+    if (growstack(proc->pgdir, proc->tf->esp, proc->stack_top) == 0)
       break;
-    }
 
-    segfault:
     cprintf("pid %d %s: page fault on %d eip 0x%x stack 0x%x sz 0x%x addr 0x%x\n",
             proc->pid, proc->name, cpu->id, tf->eip, proc->stack_top, 
 						proc->sz, rcr2());
+
+    if (proc->tf->esp > proc->sz)
+      deallocuvm(proc->pgdir, USERTOP, proc->stack_top);
+
     proc->killed = 1;
     break;
    

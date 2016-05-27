@@ -35,10 +35,10 @@ void schedinfo(void);
 int clone(void*);
 int yield(int);
 //
-void sem_init(semaphore*, uint);
-void sem_wait(semaphore*);
-void sem_signal(semaphore*);
-void sem_broadcast(semaphore*);
+void sem_init(struct semaphore*, uint);
+void sem_wait(struct semaphore*);
+void sem_signal(struct semaphore*);
+void sem_broadcast(struct semaphore*);
 //
 void test_init(void);
 int update_num(int);

@@ -83,9 +83,15 @@ trap(struct trapframe *tf)
     if (growstack(proc->pgdir, proc->tf->esp, proc->stack_top) == 0)
       break;
 
-    cprintf("pid %d %s: page fault on %d eip 0x%x stack 0x%x sz 0x%x addr 0x%x\n",
-            proc->pid, proc->name, cpu->id, tf->eip, proc->stack_top, 
-						proc->sz, rcr2());
+    //if (proc->tf->esp < proc->stack_top + PGSIZE) {
+      cprintf("pid %d %s: page fault on %d eip 0x%x ", 
+            proc->pid, proc->name, cpu->id, tf->eip);
+      cprintf("stack 0x%x sz 0x%x addr 0x%x\n",
+            proc->stack_top, proc->sz, rcr2());
+    //} else {
+    //  cprintf("pid %d %s: page fault on %d eip 0x%x sz 0x%x addr 0x%x\n", 
+    //        proc->pid, proc->name, cpu->id, tf->eip,  proc->sz, rcr2());
+    //}
 
     if (proc->tf->esp > proc->sz)
       deallocuvm(proc->pgdir, USERTOP, proc->stack_top);
